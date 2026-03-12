@@ -1,0 +1,6 @@
+node_modules/
+__pycache__/
+.claude-trace/
+trace-logs/
+*.pyc
+.DS_Store
