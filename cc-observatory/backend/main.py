@@ -6,12 +6,15 @@ from fastapi.responses import FileResponse
 from fastapi.staticfiles import StaticFiles
 
 from .database import init_db
+from .services.scheduler import start_scheduler
 
 
 @asynccontextmanager
 async def lifespan(app: FastAPI):
     init_db()
+    scheduler = start_scheduler()
     yield
+    scheduler.shutdown()
 
 
 app = FastAPI(
