@@ -1,0 +1,17 @@
+services:
+  observatory:
+    build: .
+    ports:
+      - "8000:8000"
+    volumes:
+      - observatory-data:/app/backend/data
+    environment:
+      - LLM_API_KEY=${LLM_API_KEY}
+      - LLM_BASE_URL=${LLM_BASE_URL:-https://api.lkeap.cloud.tencent.com/coding/anthropic}
+      - LLM_MODEL=${LLM_MODEL:-kimi-k2.5}
+      - PATROL_INTERVAL_MINUTES=${PATROL_INTERVAL_MINUTES:-30}
+      - CLAUDE_CODE_AUTH_TOKEN=${CLAUDE_CODE_AUTH_TOKEN}
+    restart: unless-stopped
+
+volumes:
+  observatory-data:
