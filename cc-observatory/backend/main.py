@@ -6,6 +6,7 @@ from fastapi.responses import FileResponse
 from fastapi.staticfiles import StaticFiles
 
 from .database import init_db
+from .routers import versions, test_runs, scenarios, reports, trends, patrol
 from .services.scheduler import start_scheduler
 
 
@@ -23,6 +24,14 @@ app = FastAPI(
     version="0.1.0",
     lifespan=lifespan,
 )
+
+
+app.include_router(versions.router)
+app.include_router(test_runs.router)
+app.include_router(scenarios.router)
+app.include_router(reports.router)
+app.include_router(trends.router)
+app.include_router(patrol.router)
 
 
 @app.get("/api/health")
