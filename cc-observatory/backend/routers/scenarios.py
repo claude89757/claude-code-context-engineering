@@ -4,7 +4,7 @@ from fastapi import APIRouter, Depends
 from sqlalchemy.orm import Session, joinedload
 
 from backend.database import get_db
-from backend.models import TestRun
+from backend.models import TestRun, Version
 from backend.scenarios import SCENARIOS
 
 router = APIRouter(prefix="/api/scenarios", tags=["scenarios"])
@@ -19,7 +19,7 @@ def list_scenarios():
 def scenario_history(key: str, db: Session = Depends(get_db)):
     runs = (
         db.query(TestRun)
-        .options(joinedload(TestRun.extracted_data))
+        .options(joinedload(TestRun.extracted_data), joinedload(TestRun.version))
         .filter(TestRun.scenario_key == key, TestRun.status == "success")
         .order_by(TestRun.started_at.asc())
         .all()
@@ -34,7 +34,7 @@ def scenario_history(key: str, db: Session = Depends(get_db)):
         tool_count = len(tool_names) if isinstance(tool_names, list) else 0
         result.append({
             "test_run_id": run.id,
-            "version_id": run.version_id,
+            "version_id": run.version.version if run.version else str(run.version_id),
             "started_at": run.started_at.isoformat() if run.started_at else None,
             "system_prompt_length": system_prompt_length,
             "tool_count": tool_count,

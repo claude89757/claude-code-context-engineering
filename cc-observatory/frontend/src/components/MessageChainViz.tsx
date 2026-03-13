@@ -119,7 +119,23 @@ export default function MessageChainViz({ chain }: MessageChainVizProps) {
 
   return (
     <div className="space-y-6">
-      {chain.map((turn, ti) => (
+      {chain.map((turn, ti) => {
+        // 兼容旧格式：只有 num_messages + summary，没有 messages 数组
+        if (!turn.messages || turn.messages.length === 0) {
+          const summary = turn as unknown as { summary?: string; num_messages?: number }
+          return (
+            <div key={ti} className="relative">
+              <div className="text-xs text-gray-500 mb-2 font-medium">
+                API Call Turn {turn.turn ?? ti + 1}
+              </div>
+              <div className="ml-4 border-l-2 border-gray-800 pl-4 py-2 text-sm text-gray-400">
+                {summary.num_messages ?? 0} messages — {summary.summary ?? 'no details'}
+              </div>
+            </div>
+          )
+        }
+
+        return (
         <div key={ti} className="relative">
           <div className="text-xs text-gray-500 mb-2 font-medium">
             API Call Turn {turn.turn ?? ti + 1}
@@ -151,7 +167,7 @@ export default function MessageChainViz({ chain }: MessageChainVizProps) {
             })}
           </div>
         </div>
-      ))}
+      )})}
     </div>
   )
 }

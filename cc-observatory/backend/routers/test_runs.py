@@ -67,7 +67,20 @@ def test_run_detail(run_id: int, db: Session = Depends(get_db)):
             "model_used": ed.model_used,
         }
 
-    return {
+    # 查找同场景前一版本的数据
+    prev_run = (
+        db.query(TestRun)
+        .options(joinedload(TestRun.extracted_data))
+        .filter(
+            TestRun.scenario_key == run.scenario_key,
+            TestRun.version_id < run.version_id,
+            TestRun.status == "success",
+        )
+        .order_by(TestRun.version_id.desc())
+        .first()
+    )
+
+    result = {
         "id": run.id,
         "version_id": run.version_id,
         "scenario_key": run.scenario_key,
@@ -78,7 +91,14 @@ def test_run_detail(run_id: int, db: Session = Depends(get_db)):
         "finished_at": run.finished_at.isoformat() if run.finished_at else None,
         "error_message": run.error_message,
         "extracted_data": extracted,
+        "diff_data": {
+            "original": prev_run.extracted_data.system_prompt if prev_run and prev_run.extracted_data else None,
+            "modified": run.extracted_data.system_prompt if run.extracted_data else None,
+            "prev_version_id": prev_run.version_id if prev_run else None,
+        },
     }
+
+    return result
 
 
 @router.get("/{run_id}/raw")

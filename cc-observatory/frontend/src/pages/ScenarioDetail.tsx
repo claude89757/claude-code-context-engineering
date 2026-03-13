@@ -41,6 +41,11 @@ interface TestRunDetail {
   finished_at?: string
   error_message?: string
   extracted_data?: Extracted
+  diff_data?: {
+    original?: string
+    modified?: string
+    prev_version_id?: number
+  }
 }
 
 type TabKey = 'overview' | 'system' | 'messages' | 'tools' | 'diff' | 'raw'
@@ -170,8 +175,9 @@ export default function ScenarioDetail() {
         )}
         {activeTab === 'diff' && (
           <DiffViewer
-            original={ext.diff?.original}
-            modified={ext.diff?.modified}
+            original={data.diff_data?.original}
+            modified={data.diff_data?.modified}
+            language="markdown"
           />
         )}
         {activeTab === 'raw' && (
@@ -220,14 +226,14 @@ function OverviewTab({ data, ext }: { data: TestRunDetail; ext: Extracted }) {
         <MetricCard
           label="Token Usage"
           value={
-            tokens
+            tokens && (tokens.input_tokens || tokens.output_tokens)
               ? `${((tokens.input_tokens ?? 0) + (tokens.output_tokens ?? 0)).toLocaleString()}`
-              : '--'
+              : 'N/A'
           }
           sub={
-            tokens
+            tokens && (tokens.input_tokens || tokens.output_tokens)
               ? `In: ${(tokens.input_tokens ?? 0).toLocaleString()} / Out: ${(tokens.output_tokens ?? 0).toLocaleString()}`
-              : undefined
+              : 'claude-trace 未捕获响应体'
           }
         />
       </div>

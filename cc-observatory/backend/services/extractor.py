@@ -78,9 +78,11 @@ def extract_from_jsonl(raw_jsonl: str) -> dict:
 
             # messages
             messages = body.get("messages", [])
+            truncated_messages = _truncate_messages(messages)
             messages_chain.append({
                 "num_messages": len(messages),
                 "summary": _summarize_messages(messages),
+                "messages": truncated_messages,
             })
 
             # deferred tools from first user message
@@ -98,6 +100,18 @@ def extract_from_jsonl(raw_jsonl: str) -> dict:
             usage = resp_body.get("usage")
             if usage:
                 token_usage = usage
+            elif not token_usage:
+                # Fallback: try to extract from response headers
+                resp_headers = response.get("headers", {})
+                if isinstance(resp_headers, dict):
+                    input_t = resp_headers.get("anthropic-ratelimit-input-tokens")
+                    output_t = resp_headers.get("anthropic-ratelimit-output-tokens")
+                    if input_t or output_t:
+                        token_usage = {
+                            "input_tokens": int(input_t) if input_t else 0,
+                            "output_tokens": int(output_t) if output_t else 0,
+                            "source": "headers",
+                        }
 
     system_prompt = "\n\n".join(b["text"] for b in system_blocks if b["text"])
 
@@ -185,6 +199,33 @@ def _extract_deferred_tools(messages: list[dict]) -> list[str]:
             names = [n.strip() for n in inner.splitlines() if n.strip()]
             return names
     return []
+
+
+def _truncate_messages(messages: list[dict], max_text_len: int = 1000) -> list[dict]:
+    """Truncate message content to keep storage reasonable."""
+    result = []
+    for msg in messages:
+        truncated = {"role": msg.get("role", "unknown")}
+        content = msg.get("content", "")
+        if isinstance(content, str):
+            truncated["content"] = content[:max_text_len] + ("..." if len(content) > max_text_len else "")
+        elif isinstance(content, list):
+            truncated_blocks = []
+            for block in content:
+                if isinstance(block, dict):
+                    b = dict(block)
+                    if "text" in b and isinstance(b["text"], str) and len(b["text"]) > max_text_len:
+                        b["text"] = b["text"][:max_text_len] + "..."
+                    if "thinking" in b and isinstance(b["thinking"], str) and len(b["thinking"]) > max_text_len:
+                        b["thinking"] = b["thinking"][:max_text_len] + "..."
+                    truncated_blocks.append(b)
+                else:
+                    truncated_blocks.append(block)
+            truncated["content"] = truncated_blocks
+        else:
+            truncated["content"] = str(content)[:max_text_len]
+        result.append(truncated)
+    return result
 
 
 def _extract_system_reminders(messages: list[dict]) -> list[str]:

@@ -9,7 +9,12 @@ from sqlalchemy.orm import Session, joinedload
 from backend.database import get_db
 from backend.models import AnalysisReport, ExtractedData, TestRun, Version
 from backend.services.extractor import extract_from_jsonl
-from backend.services.scheduler import get_patrol_status, run_patrol
+from backend.services.scheduler import (
+    get_available_versions_async,
+    get_patrol_status,
+    run_batch_patrol,
+    run_patrol,
+)
 
 router = APIRouter(prefix="/api/patrol", tags=["patrol"])
 
@@ -23,6 +28,26 @@ def patrol_status():
 async def trigger_patrol():
     asyncio.create_task(run_patrol())
     return {"message": "Patrol triggered"}
+
+
+@router.get("/available-versions")
+async def available_versions():
+    """List npm versions not yet analyzed."""
+    versions = await get_available_versions_async()
+    return {"versions": versions}
+
+
+class BatchTriggerRequest(BaseModel):
+    versions: list[str]
+
+
+@router.post("/trigger-batch")
+async def trigger_batch_patrol(req: BatchTriggerRequest):
+    """Trigger patrol for multiple specific versions."""
+    if not req.versions:
+        raise HTTPException(status_code=400, detail="No versions specified")
+    asyncio.create_task(run_batch_patrol(req.versions))
+    return {"message": f"Batch patrol triggered for {len(req.versions)} versions", "versions": req.versions}
 
 
 class ImportRequest(BaseModel):
@@ -93,6 +118,18 @@ def import_trace(req: ImportRequest, db: Session = Depends(get_db)):
             "api_call_count": len(extracted.get("api_calls", [])),
         },
     }
+
+
+@router.post("/fix-stuck")
+async def fix_stuck_versions(db: Session = Depends(get_db)):
+    """Fix versions stuck in 'testing' status by marking them as 'analyzed'."""
+    stuck = db.query(Version).filter(Version.status == "testing").all()
+    fixed = []
+    for v in stuck:
+        v.status = "analyzed"
+        fixed.append(v.version)
+    db.commit()
+    return {"fixed": fixed, "count": len(fixed)}
 
 
 @router.post("/generate-report/{version_id}")
