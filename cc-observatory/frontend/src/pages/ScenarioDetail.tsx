@@ -27,18 +27,20 @@ interface Extracted {
   api_calls?: { method: string; url: string }[]
   token_usage?: { input_tokens?: number; output_tokens?: number; cache_read?: number; cache_creation?: number }
   diff?: { original?: string; modified?: string }
+  model_used?: string
 }
 
 interface TestRunDetail {
-  id: string
+  id: number
   scenario_key?: string
   scenario_name?: string
-  group?: string
+  scenario_group?: string
   status?: string
-  model_used?: string
-  version_id?: string
-  created_at?: string
-  extracted?: Extracted
+  version_id?: number
+  started_at?: string
+  finished_at?: string
+  error_message?: string
+  extracted_data?: Extracted
 }
 
 type TabKey = 'overview' | 'system' | 'messages' | 'tools' | 'diff' | 'raw'
@@ -75,8 +77,8 @@ export default function ScenarioDetail() {
     if (activeTab === 'raw' && rawData === null && id) {
       setRawLoading(true)
       fetch(`/api/test-runs/${id}/raw`)
-        .then((r) => r.text())
-        .then(setRawData)
+        .then((r) => r.json())
+        .then((j) => setRawData(j.raw_jsonl ?? 'No raw data.'))
         .catch(() => setRawData('Failed to load raw data.'))
         .finally(() => setRawLoading(false))
     }
@@ -105,7 +107,7 @@ export default function ScenarioDetail() {
     )
   }
 
-  const ext = data.extracted ?? {}
+  const ext = data.extracted_data ?? {}
 
   return (
     <div className="space-y-6">
@@ -113,13 +115,13 @@ export default function ScenarioDetail() {
       <div>
         <h1 className="text-2xl font-bold">{data.scenario_name || data.scenario_key || 'Test Run'}</h1>
         <div className="flex items-center gap-3 mt-2 text-sm text-gray-400">
-          {data.group && <span className="px-2 py-0.5 rounded bg-gray-800 text-gray-300">{data.group}</span>}
+          {data.scenario_group && <span className="px-2 py-0.5 rounded bg-gray-800 text-gray-300">{data.scenario_group}</span>}
           {data.status && (
             <span
               className={`px-2 py-0.5 rounded text-xs font-medium ${
-                data.status === 'completed'
+                data.status === 'success'
                   ? 'bg-green-500/20 text-green-300'
-                  : data.status === 'failed'
+                  : data.status === 'error'
                     ? 'bg-red-500/20 text-red-300'
                     : 'bg-yellow-500/20 text-yellow-300'
               }`}
@@ -127,8 +129,8 @@ export default function ScenarioDetail() {
               {data.status}
             </span>
           )}
-          {data.model_used && <span className="font-mono text-xs">{data.model_used}</span>}
-          {data.created_at && <span className="text-xs text-gray-500">{new Date(data.created_at).toLocaleString()}</span>}
+          {ext.model_used && <span className="font-mono text-xs">{ext.model_used}</span>}
+          {data.started_at && <span className="text-xs text-gray-500">{new Date(data.started_at).toLocaleString()}</span>}
         </div>
       </div>
 
@@ -257,9 +259,9 @@ function OverviewTab({ data, ext }: { data: TestRunDetail; ext: Extracted }) {
         <div className="bg-gray-900 rounded-lg border border-gray-800 p-4 space-y-2 text-sm">
           <InfoRow label="ID" value={data.id} mono />
           {data.scenario_key && <InfoRow label="Key" value={data.scenario_key} />}
-          {data.group && <InfoRow label="Group" value={data.group} />}
-          {data.model_used && <InfoRow label="Model" value={data.model_used} mono />}
-          {data.version_id && <InfoRow label="Version" value={data.version_id} mono />}
+          {data.scenario_group && <InfoRow label="Group" value={data.scenario_group} />}
+          {ext.model_used && <InfoRow label="Model" value={ext.model_used} mono />}
+          {data.version_id && <InfoRow label="Version" value={String(data.version_id)} mono />}
         </div>
       </section>
     </div>
@@ -276,7 +278,7 @@ function MetricCard({ label, value, sub }: { label: string; value: string; sub?:
   )
 }
 
-function InfoRow({ label, value, mono }: { label: string; value: string; mono?: boolean }) {
+function InfoRow({ label, value, mono }: { label: string; value: string | number; mono?: boolean }) {
   return (
     <div className="flex gap-3">
       <span className="text-gray-500 w-24 flex-shrink-0">{label}</span>

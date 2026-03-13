@@ -2,7 +2,7 @@ services:
   observatory:
     build: .
     ports:
-      - "8000:8000"
+      - "9100:8000"
     volumes:
       - observatory-data:/app/backend/data
     environment:

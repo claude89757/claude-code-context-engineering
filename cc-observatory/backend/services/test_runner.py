@@ -49,9 +49,25 @@ def run_single_prompt_scenario(
         if jsonl_path and jsonl_path.exists():
             raw_jsonl = jsonl_path.read_text(encoding="utf-8")
 
+        if result.returncode != 0:
+            return {
+                "success": False,
+                "error": result.stderr.strip() or f"Process exited with code {result.returncode}",
+                "raw_jsonl": raw_jsonl,
+                "jsonl_path": str(jsonl_path) if jsonl_path else None,
+            }
+
+        if not raw_jsonl or not raw_jsonl.strip():
+            return {
+                "success": False,
+                "error": "claude-trace produced empty JSONL output (likely missing auth token)",
+                "raw_jsonl": None,
+                "jsonl_path": str(jsonl_path) if jsonl_path else None,
+            }
+
         return {
-            "success": result.returncode == 0,
-            "error": result.stderr.strip() if result.returncode != 0 else None,
+            "success": True,
+            "error": None,
             "raw_jsonl": raw_jsonl,
             "jsonl_path": str(jsonl_path) if jsonl_path else None,
         }
@@ -115,9 +131,25 @@ def run_multi_turn_scenario(
         if jsonl_path and jsonl_path.exists():
             raw_jsonl = jsonl_path.read_text(encoding="utf-8")
 
+        if result.returncode != 0:
+            return {
+                "success": False,
+                "error": result.stderr.strip() or f"Process exited with code {result.returncode}",
+                "raw_jsonl": raw_jsonl,
+                "jsonl_path": str(jsonl_path) if jsonl_path else None,
+            }
+
+        if not raw_jsonl or not raw_jsonl.strip():
+            return {
+                "success": False,
+                "error": "claude-trace produced empty JSONL output (likely missing auth token)",
+                "raw_jsonl": None,
+                "jsonl_path": str(jsonl_path) if jsonl_path else None,
+            }
+
         return {
-            "success": result.returncode == 0,
-            "error": result.stderr.strip() if result.returncode != 0 else None,
+            "success": True,
+            "error": None,
             "raw_jsonl": raw_jsonl,
             "jsonl_path": str(jsonl_path) if jsonl_path else None,
         }

@@ -4,24 +4,26 @@ import { Loader2 } from 'lucide-react'
 import { fetchApi } from '../lib/api'
 
 interface Version {
-  id: string
+  id: number
   version: string
   detected_at: string
-  status: 'completed' | 'running' | 'failed'
+  status: string
   summary?: string
   test_run_count?: number
 }
 
 const dotColor: Record<string, string> = {
-  completed: 'bg-green-500',
-  running: 'bg-yellow-500',
-  failed: 'bg-red-500',
+  analyzed: 'bg-green-500',
+  testing: 'bg-yellow-500',
+  detected: 'bg-blue-500',
+  error: 'bg-red-500',
 }
 
 const ringColor: Record<string, string> = {
-  completed: 'ring-green-500/30',
-  running: 'ring-yellow-500/30',
-  failed: 'ring-red-500/30',
+  analyzed: 'ring-green-500/30',
+  testing: 'ring-yellow-500/30',
+  detected: 'ring-blue-500/30',
+  error: 'ring-red-500/30',
 }
 
 export default function Timeline() {

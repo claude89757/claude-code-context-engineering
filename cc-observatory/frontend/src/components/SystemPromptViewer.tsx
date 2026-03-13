@@ -2,9 +2,10 @@ import { useState } from 'react'
 import { ChevronDown, ChevronRight, Shield } from 'lucide-react'
 
 interface SystemBlock {
-  type: string
+  index?: number
   text: string
-  cache_control?: { type: string }
+  length?: number
+  cache_control?: { type: string } | null
 }
 
 interface SystemPromptViewerProps {

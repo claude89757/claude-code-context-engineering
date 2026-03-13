@@ -4,3 +4,9 @@ __pycache__/
 trace-logs/
 *.pyc
 .DS_Store
+.env
+*.db
+cc-observatory/backend/data/traces/
+cc-observatory/frontend/dist/
+package.json
+package-lock.json

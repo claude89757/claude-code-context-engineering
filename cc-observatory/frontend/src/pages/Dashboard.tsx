@@ -5,17 +5,20 @@ import { fetchApi } from '../lib/api'
 import TrendChart from '../components/TrendChart'
 
 interface Version {
-  id: string
+  id: number
   version: string
   detected_at: string
-  status: 'completed' | 'running' | 'failed'
+  status: string
   summary?: string
-  has_diffs?: boolean
+  test_run_count: number
+  report_count: number
 }
 
 interface PatrolStatus {
-  last_patrol?: string
-  status?: string
+  last_run?: string | null
+  running?: boolean
+  current_task?: string | null
+  error?: string | null
 }
 
 interface TrendPoint {
@@ -23,16 +26,24 @@ interface TrendPoint {
   value: number
 }
 
+interface TrendsResponse {
+  metric: string
+  scenario_key: string
+  data: TrendPoint[]
+}
+
 const statusColor: Record<string, string> = {
-  completed: 'bg-green-500',
-  running: 'bg-yellow-500',
-  failed: 'bg-red-500',
+  analyzed: 'bg-green-500',
+  testing: 'bg-yellow-500',
+  detected: 'bg-blue-500',
+  error: 'bg-red-500',
 }
 
 const statusLabel: Record<string, string> = {
-  completed: 'Completed',
-  running: 'Running',
-  failed: 'Failed',
+  analyzed: 'Analyzed',
+  testing: 'Testing',
+  detected: 'Detected',
+  error: 'Error',
 }
 
 export default function Dashboard() {
@@ -50,15 +61,15 @@ export default function Dashboard() {
           fetchApi<Version[]>('/versions'),
           fetchApi<{ version: string }>('/versions/latest'),
           fetchApi<PatrolStatus>('/patrol/status'),
-          fetchApi<TrendPoint[]>('/trends?metric=system_prompt_length'),
+          fetchApi<TrendsResponse>('/trends?metric=system_prompt_length'),
         ])
 
         if (vList.status === 'fulfilled') setVersions(vList.value)
         if (latest.status === 'fulfilled') setLatestVersion(latest.value.version)
-        if (patrol.status === 'fulfilled' && patrol.value.last_patrol) {
-          setLastPatrol(new Date(patrol.value.last_patrol).toLocaleString())
+        if (patrol.status === 'fulfilled' && patrol.value.last_run) {
+          setLastPatrol(new Date(patrol.value.last_run).toLocaleString())
         }
-        if (trends.status === 'fulfilled') setTrendData(trends.value)
+        if (trends.status === 'fulfilled') setTrendData(trends.value.data ?? [])
       } finally {
         setLoading(false)
       }
@@ -66,7 +77,7 @@ export default function Dashboard() {
     load()
   }, [])
 
-  const changesCount = versions.filter((v) => v.has_diffs).length
+  const changesCount = versions.filter((v) => v.report_count > 0).length
 
   if (loading) {
     return (

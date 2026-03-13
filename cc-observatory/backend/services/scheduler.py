@@ -230,9 +230,11 @@ async def run_patrol() -> None:  # noqa: C901
         # 7. Generate LLM report
         _patrol_status["current_task"] = "generating LLM report"
         try:
+            import asyncio
             from backend.services.llm_analyzer import generate_version_report
 
-            extracted_samples = {}
+            extracted_samples = []
+            diffs_for_report = []
             completed_runs = (
                 db.query(TestRun)
                 .filter(
@@ -243,12 +245,26 @@ async def run_patrol() -> None:  # noqa: C901
             )
             for run in completed_runs:
                 if run.extracted_data:
-                    extracted_samples[run.scenario_key] = _extracted_record_to_dict(
-                        run.extracted_data
-                    )
+                    sample = _extracted_record_to_dict(run.extracted_data)
+                    sample["scenario_key"] = run.scenario_key
+                    extracted_samples.append(sample)
+
+            # Collect diffs for report
+            version_diffs = (
+                db.query(VersionDiff)
+                .filter(VersionDiff.version_id == version_record.id)
+                .all()
+            )
+            for d in version_diffs:
+                diffs_for_report.append({
+                    "name": f"{d.scenario_key}/{d.diff_type}",
+                    "content": d.diff_content or "",
+                })
 
             if extracted_samples:
-                report = generate_version_report(latest, extracted_samples)
+                report = await generate_version_report(
+                    latest, diffs_for_report, extracted_samples
+                )
                 report_record = AnalysisReport(
                     version_id=version_record.id,
                     report_type="version_summary",

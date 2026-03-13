@@ -26,8 +26,8 @@ interface Report {
 }
 
 interface VersionDetail {
-  id: string
-  version_number: string
+  id: number
+  version: string
   detected_at: string
   status: string
   test_runs: TestRun[]
@@ -62,8 +62,8 @@ function significanceBadge(significance: string) {
 }
 
 function statusBadge(status: string) {
-  const isComplete = status === 'completed' || status === 'complete'
-  const isPending = status === 'pending' || status === 'running'
+  const isComplete = status === 'analyzed' || status === 'success'
+  const isPending = status === 'pending' || status === 'running' || status === 'testing' || status === 'detected'
   const cls = isComplete
     ? 'bg-green-900/50 text-green-400'
     : isPending
@@ -173,7 +173,7 @@ export default function VersionDetail() {
         <div className="flex items-center gap-4 flex-wrap">
           <h1 className="text-3xl font-bold flex items-center gap-2">
             <GitCommit className="w-7 h-7 text-blue-400" />
-            Version {version.version_number}
+            Version {version.version}
           </h1>
           {statusBadge(version.status)}
         </div>
@@ -259,10 +259,8 @@ export default function VersionDetail() {
                 </h3>
                 <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
                   {runs.map((run) => {
-                    const isPass =
-                      run.status === 'passed' || run.status === 'completed'
-                    const isFail =
-                      run.status === 'failed' || run.status === 'error'
+                    const isPass = run.status === 'success'
+                    const isFail = run.status === 'error'
                     return (
                       <div
                         key={run.id}
