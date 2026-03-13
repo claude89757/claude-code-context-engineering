@@ -6,7 +6,7 @@
 
 ## What is this? / 这是什么？
 
-CC Observatory is a self-hosted service that automatically patrols Claude Code updates, intercepts its API requests via [claude-trace](https://github.com/nicobailon/claude-trace), extracts structured data from the raw JSONL traces, and generates LLM-powered analysis reports — all presented through a clean web dashboard.
+CC Observatory is a self-hosted service that automatically patrols Claude Code updates, intercepts its API requests via [claude-trace](https://github.com/badlogic/lemmy/tree/main/apps/claude-trace), extracts structured data from the raw JSONL traces, and generates LLM-powered analysis reports — all presented through a clean web dashboard.
 
 CC Observatory 是一个自托管服务，自动巡检 Claude Code 的更新，通过 claude-trace 拦截 API 请求，从原始 JSONL trace 中提取结构化数据，并生成 LLM 驱动的分析报告，所有内容通过 Web 仪表盘呈现。
 
