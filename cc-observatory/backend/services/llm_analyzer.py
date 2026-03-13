@@ -2,7 +2,7 @@
 
 import httpx
 
-from backend.config import LLM_API_KEY, LLM_BASE_URL, LLM_MODEL
+from backend.config import ANTHROPIC_AUTH_TOKEN, ANTHROPIC_BASE_URL, LLM_MODEL
 
 
 async def call_llm(prompt: str, model: str = None) -> dict:
@@ -16,9 +16,9 @@ async def call_llm(prompt: str, model: str = None) -> dict:
         Dict with keys: content, model_used, token_cost.
     """
     model = model or LLM_MODEL
-    url = f"{LLM_BASE_URL}/v1/messages"
+    url = f"{ANTHROPIC_BASE_URL}/v1/messages"
     headers = {
-        "x-api-key": LLM_API_KEY,
+        "x-api-key": ANTHROPIC_AUTH_TOKEN,
         "anthropic-version": "2023-06-01",
         "content-type": "application/json",
     }

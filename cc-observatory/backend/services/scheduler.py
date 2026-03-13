@@ -326,7 +326,7 @@ def _sync_generate_report(db, version_record, version: str) -> None:
     """Generate LLM report synchronously (called from worker thread)."""
     import httpx
 
-    from backend.config import LLM_API_KEY, LLM_BASE_URL, LLM_MODEL
+    from backend.config import ANTHROPIC_AUTH_TOKEN, ANTHROPIC_BASE_URL, LLM_MODEL
     from backend.services.llm_analyzer import generate_version_report
 
     extracted_samples = []
@@ -407,9 +407,9 @@ def _sync_generate_report(db, version_record, version: str) -> None:
 """
 
     # Synchronous HTTP call
-    url = f"{LLM_BASE_URL}/v1/messages"
+    url = f"{ANTHROPIC_BASE_URL}/v1/messages"
     headers = {
-        "x-api-key": LLM_API_KEY,
+        "x-api-key": ANTHROPIC_AUTH_TOKEN,
         "anthropic-version": "2023-06-01",
         "content-type": "application/json",
     }

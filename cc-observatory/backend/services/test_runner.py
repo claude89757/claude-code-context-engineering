@@ -22,6 +22,9 @@ def run_single_prompt_scenario(
 
     env = {k: v for k, v in os.environ.items() if "CLAUDECODE" not in k}
     env["CLAUDE_TRACE_DIR"] = str(claude_trace_dir)
+    # Bridge ANTHROPIC_AUTH_TOKEN to ANTHROPIC_API_KEY for claude CLI
+    if os.environ.get("ANTHROPIC_AUTH_TOKEN") and not os.environ.get("ANTHROPIC_API_KEY"):
+        env["ANTHROPIC_API_KEY"] = os.environ["ANTHROPIC_AUTH_TOKEN"]
 
     cmd = [
         "claude-trace",
@@ -104,6 +107,9 @@ def run_multi_turn_scenario(
 
     env = {k: v for k, v in os.environ.items() if "CLAUDECODE" not in k}
     env["CLAUDE_TRACE_DIR"] = str(claude_trace_dir)
+    # Bridge ANTHROPIC_AUTH_TOKEN to ANTHROPIC_API_KEY for claude CLI
+    if os.environ.get("ANTHROPIC_AUTH_TOKEN") and not os.environ.get("ANTHROPIC_API_KEY"):
+        env["ANTHROPIC_API_KEY"] = os.environ["ANTHROPIC_AUTH_TOKEN"]
 
     cmd = [
         "claude-trace",
