@@ -6,9 +6,6 @@
     "name": "claude89757"
   },
   "homepage": "https://github.com/claude89757/claude-code-context-engineering",
-  "repository": {
-    "type": "git",
-    "url": "https://github.com/claude89757/claude-code-context-engineering.git"
-  },
+  "repository": "https://github.com/claude89757/claude-code-context-engineering",
   "license": "MIT"
 }
