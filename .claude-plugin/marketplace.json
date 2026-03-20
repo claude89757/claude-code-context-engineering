@@ -1,0 +1,11 @@
+{
+  "name": "claude-code-context-engineering",
+  "description": "Tools for understanding Claude Code's context engineering — trace capture, version analysis, and prompt inspection.",
+  "plugins": [
+    {
+      "name": "cc-trace",
+      "description": "Capture and analyze Claude Code's real API requests using claude-trace.",
+      "source": "./plugins/cc-trace"
+    }
+  ]
+}
