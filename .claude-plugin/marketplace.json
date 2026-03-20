@@ -1,6 +1,11 @@
 {
   "name": "claude-code-context-engineering",
-  "description": "Tools for understanding Claude Code's context engineering — trace capture, version analysis, and prompt inspection.",
+  "owner": {
+    "name": "claude89757"
+  },
+  "metadata": {
+    "description": "Tools for understanding Claude Code's context engineering — trace capture, version analysis, and prompt inspection."
+  },
   "plugins": [
     {
       "name": "cc-trace",

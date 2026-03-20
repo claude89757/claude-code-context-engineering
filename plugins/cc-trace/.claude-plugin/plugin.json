@@ -3,12 +3,12 @@
   "description": "Capture and analyze Claude Code's real API requests using claude-trace. See what Claude Code actually sends to the LLM — system prompts, tools, thinking config, context management, and more.",
   "version": "1.0.0",
   "author": {
-    "name": "xiezengtian"
+    "name": "claude89757"
   },
-  "homepage": "https://github.com/xiezengtian/claude-code-context-engineering",
+  "homepage": "https://github.com/claude89757/claude-code-context-engineering",
   "repository": {
     "type": "git",
-    "url": "https://github.com/xiezengtian/claude-code-context-engineering.git"
+    "url": "https://github.com/claude89757/claude-code-context-engineering.git"
   },
   "license": "MIT"
 }
